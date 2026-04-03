@@ -1,4 +1,312 @@
-Sample Flask application.
+<div align="center">
+  
+# Flask Notes Application
+This documentation outlines the process of setting up a **CI/CD pipeline** using **Jenkins**, **GitHub**, and **Docker** for deploying a **Flask Notes Application**. This integration allows for seamless deployments whenever changes are made in the GitHub repository. The guide includes detailed steps and descriptions to ensure that no important information is left out.
 
-This project will be enhanced step-by-step with containerization,
-CI/CD pipeline, and deployment automation for learning purposes.
+</div>
+
+<img width="1153" height="502" alt="image" src="https://github.com/user-attachments/assets/b9effaf3-c327-4dc5-a92e-7e464564acbe" />
+
+
+## Project Overview
+
+In this project, we will:
+
+1. **Create an EC2 instance** on AWS to host Jenkins and Docker.
+2. **Set up Jenkins** to automate the CI/CD process.
+3. **Use Docker** to containerize the Flask application.
+4. **Integrate GitHub** for automatic deployments upon code changes.
+
+---
+
+## Steps to Implement the Project
+
+### 1. Create an AWS EC2 Instance
+
+To host the Jenkins server, we first need to create an EC2 instance on AWS.
+
+1. **Login to AWS**:
+   - Navigate to the [AWS Console](https://aws.amazon.com) and log in with your credentials.
+
+2. **Launch an EC2 Instance**:
+   - Go to the **EC2 Dashboard** and click on **Launch Instance**.
+   - Select the **Ubuntu 24.04 LTS** AMI from the list of available Amazon Machine Images (AMIs).
+   - Choose the **t2.micro** instance type, which is eligible for the free tier.
+   - Click **Next: Configure Instance Details** and proceed through the default settings.
+   - In the **Configure Security Group** section, create a new security group allowing **SSH (port 22)** for connecting to the instance and **HTTP (port 80)** for web traffic.
+
+3. **Connect to EC2 Instance**:
+   - After launching the instance, you can connect to it using SSH. Open your terminal and run the following command, replacing `<your-key>.pem` with your key file and `<your-ec2-public-ip>` with your instance's public IP address:
+   
+     ```bash
+     ssh -i <your-key>.pem ubuntu@<your-ec2-public-ip>
+     ```
+
+
+
+---
+
+### 2. Update the EC2 Instance
+
+Before installing any packages, ensure that your instance is up-to-date. This practice helps prevent issues related to outdated packages.
+
+1. **Run the following command**:
+
+   ```bash
+   sudo apt update
+   ```
+   This command updates the package lists for upgrades and new package installations.
+
+
+---
+
+### 3. Install Java
+
+Since Jenkins is built using Java, you need to install a Java Runtime Environment (JRE) to ensure Jenkins runs correctly.
+
+1. **Install OpenJDK 21**:
+   - Run the following command to install the latest version of OpenJDK:
+   
+     ```bash
+     sudo apt install fontconfig openjdk-21-jre
+     ```
+
+2. **Verify Java Installation**:
+   - Check whether Java is installed by running:
+   
+     ```bash
+     java -version
+     ```
+
+
+
+---
+
+### 4. Install Jenkins
+
+Now that Java is installed, you can proceed to install Jenkins, which will be used to create the CI/CD pipeline.
+
+1. **Add Jenkins Key**:
+   - Execute the following command to add the Jenkins key:
+   
+     ```bash
+     sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+     https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+     ```
+
+2. **Add Jenkins Repository**:
+   - Add the Jenkins repository to your system:
+   
+     ```bash
+     echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \
+     https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+     /etc/apt/sources.list.d/jenkins.list > /dev/null
+     ```
+
+3. **Update Package Index**:
+   - Run the following command to update the package index:
+   
+     ```bash
+     sudo apt-get update
+     ```
+
+4. **Install Jenkins**:
+   - Execute the following command to install Jenkins:
+   
+     ```bash
+     sudo apt-get install jenkins
+     ```
+
+5. **Start and Enable Jenkins**:
+   - Enable Jenkins to start at boot:
+
+     ```bash
+     sudo systemctl enable --now jenkins
+     ```
+
+6. **Check Jenkins Status**:
+   - Verify that Jenkins is running:
+
+     ```bash
+     sudo systemctl status jenkins
+     ```
+
+7. **Access Jenkins**:
+   - Jenkins runs on port 8080. To access Jenkins, go to your EC2 instance's public IP address with port 8080 in your web browser:
+
+     ```
+     http://<instance_public_ip>:8080
+     ```
+
+8. **Configure Security Group**:
+    - In the AWS EC2 dashboard, go to the **Security Group** of your instance, edit the inbound rules, and add a rule for **port 8080**.
+
+
+
+---
+
+### 5. Initial Jenkins Setup
+
+1. **Get Admin Password**:
+   - To log in to Jenkins for the first time, you will need the initial admin password. Run the following command to retrieve it:
+
+     ```bash
+     sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+     ```
+
+2. **Login to Jenkins**:
+   - Open your web browser and enter the Jenkins URL. Paste the admin password in the required field.
+
+3. **Install Suggested Plugins**:
+   - Follow the prompts to install the suggested plugins.
+
+4. **Create Admin User**:
+   - Set up an admin user with a password for future logins.
+
+
+
+---
+
+### 6. Create a New Jenkins Pipeline Project
+
+1. **Create a New Item**:
+   - Click on **New Item** in Jenkins.
+
+2. **Project Title**:
+   - Enter a title for your project and select **Pipeline** as the project type, then click **OK**.
+
+3. **Configure GitHub Project**:
+   - In the General section, check the **GitHub project** option and provide your GitHub repository URL.
+
+4. **Create a Jenkinsfile**:
+   - In your GitHub repository, create a file named `Jenkinsfile` and add the following pipeline script:
+
+     ```groovy
+     pipeline {
+         agent any
+         stages {
+             stage("Clone The code...") {
+                 steps {
+                     echo "Cloning the code"
+                     git url: "<Your_github_project_repo_url>", branch: "main"
+                 }
+             }
+             stage("Build and Test...") {
+                 steps {
+                     echo "Building the Docker image(Container)"
+                     sh "docker build . -t flask-notes-app:latest"
+                 }
+             }
+             stage("Push build to Docker Hub") {
+                 steps {
+                     echo "Pushing build to DockerHub..."
+                     withCredentials([
+                         usernamePassword(
+                             credentialsId: "dockerHub",
+                             passwordVariable: "dockerHubPass",
+                             usernameVariable: "dockerHubUser"
+                         )    
+                     ]) {
+                         sh "docker tag cicd-note-app ${env.dockerHubUser}/flask-notes-app:latest"
+                         sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+                         sh "docker push ${env.dockerHubUser}/flask-notes-app:latest"
+                     }
+                 }
+             }
+             stage("Deploy the Container") {
+                 steps {
+                     echo "Deploying docker Container..."
+                     sh "docker compose down && docker compose up -d "
+                 }
+             }
+         }
+     }
+     ```
+
+5. **Save the Jenkins Project**:
+   - Click on **Save** after configuring your pipeline project.
+
+
+
+---
+
+### 7. Configure Docker Hub
+
+1. **Create Docker Hub Account**:
+   - If you don't already have a Docker Hub account, create one at [Docker Hub](https://hub.docker.com/).
+
+2. **Add Credentials in Jenkins**:
+   - In Jenkins, go to **Manage Jenkins** -> **Manage Credentials** -> **System** -> **Global credentials (unrestricted)** -> **Add Credentials**.
+   - Select **Username with Password** and enter your Docker Hub credentials. Provide an ID name (e.g., `dockerHub`) to identify these credentials.
+
+
+
+---
+
+### 8. Install Docker and Docker Compose
+
+1. **Install Docker**:
+   - Run the following command to install Docker:
+
+     ```bash
+     sudo apt install docker.io
+     ```
+
+2. **Add Jenkins User to Docker Group**:
+   - This allows Jenkins to run Docker commands without needing sudo:
+
+     ```bash
+     sudo usermod -aG docker jenkins 
+     ```
+
+3. **Reboot the Server**:
+   - Reboot the server to apply changes:
+
+     ```bash
+     sudo reboot
+     ```
+
+4. **Install Docker Compose**:
+   - Follow these steps to install Docker Compose:
+
+     ```bash
+     sudo apt-get update
+     sudo apt-get install docker-compose-v2
+     ```
+
+5. **Verify Docker and Docker Compose Installation**:
+   - Check the versions to ensure they are installed correctly:
+   
+     ```bash
+     docker --version
+     docker-compose --version
+     ```
+
+
+
+---
+
+### 9. Deploy the Application
+
+1. **Trigger a Build**:
+   - Go back to your Jenkins pipeline project and click **Build Now** to start the pipeline.
+
+2. **Monitor the Console Output**:
+   - Click on the build number to view the console output and monitor the deployment process.
+
+3. **Access the Application**:
+   - Once the build is complete, access your Flask Notes Application using the public IP of your EC2 instance.
+
+
+
+---
+
+### Conclusion
+
+You have successfully set up a CI/CD pipeline using Jenkins, GitHub, and Docker for your Flask Notes Application. This setup enables automatic deployments whenever changes are pushed to the GitHub repository, streamlining the development and deployment process.
+
+With this CI/CD pipeline, you can ensure that your Flask Notes Application is continuously integrated and delivered with high reliability and efficiency.
+
+---
+
+### Output Images of Project ( Which I have done while practicing CI/CD for this Project which ensure that it works properly )
