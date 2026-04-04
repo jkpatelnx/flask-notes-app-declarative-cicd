@@ -1,0 +1,20 @@
+# Ignore database volume
+compose/mysql_data
+
+# Ignore sensitive files
+*.pem
+*.key
+
+# Git files
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Env files
+.env
+
+# Logs
+*.log
