@@ -311,7 +311,7 @@ With this CI/CD pipeline, you can ensure that your Flask Notes Application is co
 
 ### Output Images of Project ( Which I have done while practicing CI/CD for this Project which ensure that it works properly )
 
-1 ) Commiting the changes on Github Repo : ("Flask App New 🚀" -> "Falsk Notes App 🚀")
+1 ) Commiting the changes on Github Repo :  
   <img width="2032" height="1110" alt="Screenshot 2026-04-04 at 3 27 41 PM" src="https://github.com/user-attachments/assets/a32bc694-5363-483f-9688-a7f27526d372" />
 
 2 ) It successully Trigger the pipeline on Github push :
@@ -320,7 +320,7 @@ With this CI/CD pipeline, you can ensure that your Flask Notes Application is co
 3 ) Running the Pipeline Script :
   <img width="2032" height="1110" alt="Screenshot 2026-04-04 at 3 28 56 PM" src="https://github.com/user-attachments/assets/cc7fda26-488d-4439-880e-f382cb034f9f" />
 
-4 ) Successfully Run the Pipeline script : ("Flask App New" 🚀 -> "Falsk Notes App 🚀")
+4 ) Successfully Run the Pipeline script : 
   <img width="2032" height="1110" alt="Screenshot 2026-04-04 at 3 37 57 PM" src="https://github.com/user-attachments/assets/ffe23899-b971-46aa-9a1b-e17b9a7aee5c" />
 
 5 ) Viewing Stages of that Jenkins Job ( Which works properly ) :
