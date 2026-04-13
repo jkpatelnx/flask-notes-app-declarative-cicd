@@ -5,8 +5,7 @@ This documentation outlines the process of setting up a **CI/CD pipeline** using
 
 </div>
 
-<img width="1153" height="502" alt="image" src="https://github.com/user-attachments/assets/b9effaf3-c327-4dc5-a92e-7e464564acbe" />
-
+<img width="1280" height="720" alt="05-project" src="https://github.com/user-attachments/assets/57ef81b9-14d4-4c49-82d8-0ce70bd33d1c" />
 
 ## Project Overview
 
